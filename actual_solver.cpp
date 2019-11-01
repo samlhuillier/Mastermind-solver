@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdlib>
 #include <ctime>
 #include <vector>
 #include <chrono>
@@ -10,7 +9,7 @@ int randn(int n);
 bool is_banned(const std::vector<int>& banned_vector, int index);
 
 struct solver{
-  void give_feedback(const std::vector<int>& attempt, int& black_hits, int& white_hits){
+  void feedback(const std::vector<int>& attempt, int& black_hits, int& white_hits){
     //check black hits first
     std::vector<int> banned_from_sequence;
     black_hits = 0;
@@ -41,10 +40,10 @@ struct solver{
 
   }
 
-    void init(int i_length, int i_num){
+    void start(int i_length, int i_num){
         length = i_length;
         num = i_num;
-        run_learn_before = false;
+        run_get_insights_before = false;
 
         std::vector<int> temp_to_gen_all;
         for (int g = 0; g< length; g++){
@@ -55,21 +54,21 @@ struct solver{
 
     }
 
-    void create_attempt(std::vector<int>& attempt){
+    void make_attempt(std::vector<int>& attempt){
       attempt = potential_solutions[randn(potential_solutions.size())];
     }
 
-    void learn(std::vector<int>& attempt, int black_hits, int white_hits){
+    void get_insights(std::vector<int>& attempt, int black_hits, int white_hits){
 
       int temp_black_hits = 0;
       int temp_white_hits = 0;
       std::vector<std::vector<int> > next_potential_solutions;
 
-      if (!run_learn_before){
+      if (!run_get_insights_before){
         for (int d = 0; d<length;d++){
           temp_sequence.push_back(0);
         }
-        run_learn_before = true;
+        run_get_insights_before = true;
       }
       for (int x = 0; x< potential_solutions.size(); x++){
         for (int c = 0; c < potential_solutions[x].size(); c++){
@@ -77,7 +76,7 @@ struct solver{
           //std::cout<<temp_sequence[c];
         }
         //std::cout<<std::endl;
-        give_feedback(attempt, temp_black_hits, temp_white_hits);
+        feedback(attempt, temp_black_hits, temp_white_hits);
         if (temp_black_hits == black_hits && temp_white_hits == white_hits){
           next_potential_solutions.push_back(temp_sequence);
         }
@@ -100,7 +99,7 @@ struct solver{
 
     int length;
     int num;
-    bool run_learn_before;
+    bool run_get_insights_before;
     std::vector<std::vector<int> > potential_solutions;
     std::vector<int> temp_sequence;
     int no_of_attempts;
@@ -121,7 +120,7 @@ int main(){
     std::cout<<std::endl;
 
     solver thisSolver;
-    thisSolver.init(length, num);
+    thisSolver.start(length, num);
     std::vector<int> attempt;
 
     int black = 0;
@@ -129,7 +128,7 @@ int main(){
     int no_of_attempts = 0;
 
     while (black < length){
-      thisSolver.create_attempt(attempt);
+      thisSolver.make_attempt(attempt);
       std::cout<<"Attempt this code: ";
       for (int i = 0; i<attempt.size(); i++){
         std::cout<<attempt[i]<<" ";
@@ -140,7 +139,7 @@ int main(){
       std::cout<<"How many whites did it get? ";
       std::cin>>white;
       std::cout<<std::endl;
-      thisSolver.learn(attempt,black,white);
+      thisSolver.get_insights(attempt,black,white);
       no_of_attempts = no_of_attempts + 1;
     }
     for (int i = 0; i<attempt.size(); i++){
